@@ -15,6 +15,7 @@ def generate_semgrep_rules_stats(semgrep_rules_repo_dir: str):
     no_of_rules: int = 0
     no_of_rules_with_fix: int = 0
     no_of_rules_with_fix_regex: int = 0
+    no_of_rules_without_a_language: int = 0
     no_of_rules_per_language: Dict[str, int] = defaultdict(lambda: 0)
     no_of_rules_with_fix_per_language: Dict[str, int] = defaultdict(lambda: 0)
     no_of_rules_with_fix_regex_per_language: Dict[str, int] = defaultdict(lambda: 0)
@@ -41,12 +42,15 @@ def generate_semgrep_rules_stats(semgrep_rules_repo_dir: str):
                             if "fix-regex" in rule:
                                 no_of_rules_with_fix_regex += 1
                             #####
-                            for language in rule["languages"]:
-                                no_of_rules_per_language[language] += 1
-                                if "fix" in rule:
-                                    no_of_rules_with_fix_per_language[language] += 1
-                                if "fix-regex" in rule:
-                                    no_of_rules_with_fix_regex_per_language[language] += 1
+                            if "languages" in rule:
+                                for language in rule["languages"]:
+                                    no_of_rules_per_language[language] += 1
+                                    if "fix" in rule:
+                                        no_of_rules_with_fix_per_language[language] += 1
+                                    if "fix-regex" in rule:
+                                        no_of_rules_with_fix_regex_per_language[language] += 1
+                            else:
+                                no_of_rules_without_a_language += 1
                     except yaml.YAMLError as exc:
                         no_of_erroneous_yaml_files += 1
                     except:
@@ -62,6 +66,7 @@ def generate_semgrep_rules_stats(semgrep_rules_repo_dir: str):
     print(f"No. of rules: {no_of_rules}")
     print(f"No. of rules with a 'fix': {no_of_rules_with_fix}")
     print(f"No. of rules with a 'fix-regex': {no_of_rules_with_fix_regex}")
+    print(f"No. of rules w/o a language: {no_of_rules_without_a_language}")
     print("")
     print("Languages, sorted by number of rules (note that a rule can apply to multiple languages):")
     for language, no_of_rules in sorted(no_of_rules_per_language.items(), key=lambda x: x[1], reverse=True):
